@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Diary Header Widget</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Gowun Dodum', sans-serif;
+  }
+
+  .widget {
+    width: 100%;
+    max-width: 720px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 20px;
+    padding: 28px 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  /* 별빛 효과 */
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    opacity: 0;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; }
+    50% { opacity: var(--op); }
+  }
+
+  /* 상단: 날짜 + 시계 */
+  .top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .date-block {}
+
+  .date-main {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #e8e0f5;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .date-sub {
+    font-size: 0.75rem;
+    color: #9b8ec4;
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .clock {
+    text-align: right;
+  }
+
+  .clock-time {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #e8e0f5;
+    line-height: 1;
+  }
+
+  .clock-seconds {
+    font-size: 0.75rem;
+    color: #9b8ec4;
+    margin-top: 4px;
+    letter-spacing: 2px;
+    display: block;
+    text-align: right;
+  }
+
+  /* 구분선 */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #534b8a, transparent);
+    margin: 16px 0;
+  }
+
+  /* 하단: 문구 */
+  .quote-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .quote-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  .quote-text {
+    font-size: 0.9rem;
+    color: #c9bfea;
+    line-height: 1.6;
+    font-style: italic;
+    letter-spacing: 0.3px;
+  }
+
+  /* 하단 태그 */
+  .bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 14px;
+    gap: 8px;
+  }
+
+  .tag {
+    font-size: 0.65rem;
+    color: #6b5fa0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.05);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* 페이드인 */
+  .widget { animation: fadein 0.8s ease; }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="stars" id="stars"></div>
+
+  <div class="top-row">
+    <div class="date-block">
+      <div class="date-main" id="date"></div>
+      <div class="date-sub" id="weekday"></div>
+    </div>
+    <div class="clock">
+      <div class="clock-time" id="clock"></div>
+      <span class="clock-seconds" id="seconds"></span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="quote-block">
+    <span class="quote-icon">🌙</span>
+    <span class="quote-text" id="quote"></span>
+  </div>
+
+  <div class="bottom-row">
+    <span class="tag">daily diary</span>
+  </div>
+</div>
+
+<script>
+  // ✏️ 여기서 문구를 바꾸세요
+  const quotes = [
+    "오늘도 잘 버텼어. 그것만으로 충분해.",
+    "기록하는 사람이 기억하는 사람이 된다.",
+    "작은 것부터. 지금 바로.",
+    "잘 못한 날도 괜찮아. 내일이 있어.",
+    "완벽하지 않아도 오늘은 오늘이야.",
+    "천천히 가도 괜찮아. 멈추지만 않으면 돼.",
+    "오늘 하루도 수고했어.",
+  ];
+
+  const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  // 날짜
+  function updateDate() {
+    const now = new Date();
+    document.getElementById('date').textContent =
+      `${now.getFullYear()}년 ${months[now.getMonth()]} ${now.getDate()}일`;
+    document.getElementById('weekday').textContent = days[now.getDay()];
+  }
+
+  // 시계
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}`;
+    document.getElementById('seconds').textContent = `${s}s`;
+  }
+
+  // 오늘 날짜 기준으로 문구 고정 (매일 바뀜)
+  function setQuote() {
+    const today = new Date().getDate();
+    document.getElementById('quote').textContent = quotes[today % quotes.length];
+  }
+
+  // 별 생성
+  function makeStars() {
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 40; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.cssText = `
+        left: ${Math.random()*100}%;
+        top: ${Math.random()*100}%;
+        --dur: ${2 + Math.random()*3}s;
+        --op: ${0.3 + Math.random()*0.7};
+        animation-delay: ${Math.random()*3}s;
+      `;
+      container.appendChild(s);
+    }
+  }
+
+  updateDate();
+  updateClock();
+  setQuote();
+  makeStars();
+  setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
